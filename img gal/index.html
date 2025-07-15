@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image Gallery</title>
+  <style>
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f0f0f5;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 2.4rem;
+      color: #222;
+      text-align: center;
+    }
+
+    /* Filter Buttons */
+    .filters {
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .filters button {
+      padding: 10px 28px;
+      border: none;
+      background: linear-gradient(45deg, #6a11cb, #2575fc);
+      color: white;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(101, 67, 255, 0.5);
+      transition: background 0.3s ease, transform 0.25s ease;
+      user-select: none;
+      min-width: 100px;
+    }
+    .filters button:hover,
+    .filters button:focus {
+      background: linear-gradient(45deg, #2575fc, #6a11cb);
+      transform: scale(1.07);
+      outline: none;
+    }
+
+    /* Gallery Grid */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .gallery img {
+      width: 100%;
+      border-radius: 15px;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+      object-fit: cover;
+      aspect-ratio: 4 / 3;
+    }
+    .gallery img:hover {
+      transform: scale(1.07);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.25);
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+    .lightbox img {
+      max-width: 90%;
+      max-height: 85vh;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      user-select: none;
+    }
+    .lightbox .nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 3rem;
+      color: white;
+      cursor: pointer;
+      padding: 10px 15px;
+      user-select: none;
+      transition: color 0.3s ease;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.4);
+    }
+    .lightbox .nav:hover {
+      color: #6a11cb;
+      background: rgba(255,255,255,0.2);
+    }
+    .prev {
+      left: 20px;
+    }
+    .next {
+      right: 20px;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+      .filters button {
+        min-width: 80px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+      .gallery {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+      }
+      .lightbox .nav {
+        font-size: 2.5rem;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Gallery</h1>
+  <div class="filters">
+    <button onclick="filterImages('all')">All</button>
+    <button onclick="filterImages('nature')">Nature</button>
+    <button onclick="filterImages('city')">City</button>
+  </div>
+
+  <div class="gallery" id="gallery">
+    <img src="nature1.jpg" data-category="nature" alt="Nature 1" onclick="openLightbox(this)" />
+    <img src="city.jpg" data-category="city" alt="City " onclick="openLightbox(this)" />
+    <img src="nature3.jpeg" data-category="nature" alt="Nature 3" onclick="openLightbox(this)" />
+    <img src="city3.jpg" data-category="city" alt="City 3" onclick="openLightbox(this)" />
+    <img src="nature2..jpg" data-category="nature" alt="Nature 2" onclick="openLightbox(this)" />
+    <img src="city2.jpg" data-category="city" alt="City 2" onclick="openLightbox(this)" />
+    <img src="nature 4.jpg" data-category="nature" alt="Nature 4" onclick="openLightbox(this)" />
+    <img src="city 4.jpg" data-category="city" alt="City 4" onclick="openLightbox(this)" />
+    <img src="nature 5.jpg" data-category="nature" alt="Nature 5" onclick="openLightbox(this)" />
+    <img src="city5.jpg" data-category="city" alt="City 5" onclick="openLightbox(this)" />
+    <img src="nature 6.jpg" data-category="nature" alt="Nature 6" onclick="openLightbox(this)" />
+  </div>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-label">
+    <span class="nav prev" aria-label="Previous image" onclick="navigate(-1)">&#10094;</span>
+    <img id="lightbox-img" alt="" />
+    <span class="nav next" aria-label="Next image" onclick="navigate(1)">&#10095;</span>
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    let currentIndex = 0;
+    let currentImages = [];
+
+    function openLightbox(img) {
+      currentImages = Array.from(document.querySelectorAll('.gallery img')).filter(i => i.style.display !== 'none');
+      currentIndex = currentImages.indexOf(img);
+      lightbox.style.display = 'flex';
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt || '';
+      document.body.style.overflow = 'hidden'; // prevent background scroll when lightbox open
+    }
+
+    function navigate(dir) {
+      currentIndex = (currentIndex + dir + currentImages.length) % currentImages.length;
+      const img = currentImages[currentIndex];
+      lightboxImg.src = img.src;
+      lightboxImg.alt = img.alt || '';
+    }
+
+    lightbox.addEventListener('click', function (e) {
+      if (e.target === lightbox) {
+        lightbox.style.display = 'none';
+        document.body.style.overflow = ''; // restore scroll
+      }
+    });
+
+    function filterImages(category) {
+      const images = document.querySelectorAll('.gallery img');
+      images.forEach(img => {
+        if (category === 'all' || img.dataset.category === category) {
+          img.style.display = 'block';
+        } else {
+          img.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
